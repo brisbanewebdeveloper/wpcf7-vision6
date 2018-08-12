@@ -7,7 +7,7 @@
 
 ## Requirement
 
-Contact Form 7 Version 4.4 or later. You can still put extra code in `functions.php` by referring the code in `wpcf7-vision6.php` even the version does not match.
+Contact Form 7 Version 4.4 or later. You can still put extra code in `functions.php` by referring the code in `wpcf7-vision6.php` even if the version does not match.
 
 ## General Setup
 
