@@ -84,11 +84,11 @@ If you need to show a checkbox and the subscriber must have it ticked, this feat
 
 ## Field Mapping
 
-This plugin automatically maps the fields between Contact Form 7 and Vision 6 as assuming they both have the same field names. So if Contact Form 7 has the field `your-email`, the field `Field Name` at Vision 6 must be `your-email`:
+This plugin automatically maps the fields between Contact Form 7 and Vision 6 as assuming they both have the same field names. So if Contact Form 7 has the field `your-email`, the field `Field Name` at Vision 6 side is expected to have `your-email` (Do not conclude about how this Plugin works here and keep reading):
 
 ![Field Mapping for Default Behaviour](assets/field-mapping-default-behaviour.png "Field Mapping for Default Behaviour")
 
-The behaviour above makes the email sent to Vision 6 Admin have `your-email` instead of the value of `Field Display Name`.
+Above behaviour makes the email for Admin have `your-email` instead of the value of `Field Display Name`.
 
 ![Email for Default Behaviour](assets/field-mapping-default-behaviour-email.png "Email for Default Behaviour")
 
