@@ -57,14 +57,18 @@ Class WPCF7VISION6 {
         $this->api = new Vision6Api(self::URL, $api_key, '3.3');
     }
 
+    // Contact Form 7 Related
+
     /**
      * @param WPCF7_ContactForm $contact_form
+     * @param string $name
+     *
      * @return string|null
      */
-    public static function getApiKey($contact_form) {
-        $data = $contact_form->additional_setting('vision6_api_key');
-        if (count($data)) {
-            return array_pop($data);
+    public static function get($contact_form, $name) {
+        $settings = $contact_form->additional_setting($name);
+        if (count($settings)) {
+            return array_pop($settings);
         } else {
             return null;
         }
@@ -72,10 +76,104 @@ Class WPCF7VISION6 {
 
     /**
      * @param WPCF7_ContactForm $contact_form
+     * @param string $name
+     *
      * @return bool
      */
-    public static function tiedToVision6($contact_form) {
-        return ! is_null(WPCF7VISION6::getApiKey($contact_form));
+    public function has($contact_form, $name) {
+        return ! empty(WPCF7VISION6::get($contact_form, $name));
+    }
+
+    /**
+     * @param WPCF7_ContactForm $contact_form
+     * @return string|null
+     */
+    public static function get_api_key($contact_form) {
+        return WPCF7VISION6::get($contact_form, 'vision6_api_key');
+    }
+
+    /**
+     * @param WPCF7_ContactForm $contact_form
+     * @param string $email
+     * @param null|string $field_name
+     *
+     * @return bool
+     */
+    public function has_email_in_vision6($contact_form, $email, $field_name = null) {
+        if ($email) {
+            if (is_null($field_name)) {
+                return $this->hasEmail($contact_form, 'your-email', $email) || $this->hasEmail($contact_form, 'Email', $email);
+            } else {
+                return $this->hasEmail($contact_form, $field_name, $email);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @param WPCF7_ContactForm $contact_form
+     * @return int
+     */
+    public function has_list_id($contact_form) {
+        return WPCF7VISION6::has($contact_form, 'vision6_list_id');
+    }
+
+    /**
+     * @param WPCF7_ContactForm $contact_form
+     * @return int|null
+     */
+    public function get_list_id($contact_form) {
+        $settings = $contact_form->additional_setting('vision6_list_id');
+        if (count($settings)) {
+            $list_id = array_pop($settings);
+            return $this->parse_list_id($list_id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param WPCF7_ContactForm $contact_form
+     * @return string|null
+     */
+    public function get_contact7_email_field($contact_form) {
+        return WPCF7VISION6::get($contact_form, 'vision6_contact7_email_field');
+    }
+
+    /**
+     * @param WPCF7_ContactForm $contact_form
+     * @return bool
+     */
+    public static function is_vision6_form($contact_form) {
+        return ! is_null(WPCF7VISION6::get_api_key($contact_form));
+    }
+
+    /**
+     * @param string $value
+     * @return string|null
+     */
+    private function parse_list_id($value) {
+        preg_match('#^([0-9]+)\s?#', $value, $matches);
+        if (empty($matches[1])) {
+            return null;
+        } else {
+            return $matches[1];
+        }
+    }
+
+
+
+
+    // Vision 6 API Related
+
+    /**
+     * Let other code to use Vision 6 API
+     *
+     * @return Vision6Api
+     */
+    public function getApi() {
+        return $this->api;
     }
 
     /**
@@ -98,85 +196,16 @@ Class WPCF7VISION6 {
 
     /**
      * Debug
-     * If something wrong happened, die() is called.
-     */
-    public function check() {
-        $output = $this->api->invokeMethod('getTimezoneList');
-        return (is_array($output) && count($output));
-    }
-
-    /**
-     * @return mixed
-     */
-    public function search_list() {
-        return $this->api->invokeMethod('searchLists', [], 0, 0, 'name', 'ASC');
-    }
-
-    /**
-     * @param string $value
-     * @return string|null
-     */
-    private function parse_list_id($value) {
-        preg_match('#^([0-9]+)\s?#', $value, $matches);
-        if (empty($matches[1])) {
-            return null;
-        } else {
-            return $matches[1];
-        }
-    }
-
-    /**
-     * @param int $list_id
-     * @return mixed
-     */
-    public function get_list($list_id) {
-        return $this->api->invokeMethod('getListById', $list_id);
-    }
-
-    /**
-     * @param WPCF7_ContactForm $contact_form
-     * @return int
-     */
-    public function has_list_id($contact_form) {
-        $settings = $contact_form->additional_setting('vision6_list_id');
-        return count($settings);
-    }
-
-    /**
-     * @param WPCF7_ContactForm $contact_form
-     * @return int|null
-     */
-    public function get_list_id($contact_form) {
-        $settings = $contact_form->additional_setting('vision6_list_id');
-        if (count($settings)) {
-            $list_id = array_pop($settings);
-            return $this->parse_list_id($list_id);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Debug
      *
      * @param WPCF7_ContactForm $contact_form
      * @param string $method
      * @return mixed
      */
     public static function debug($contact_form, $method = 'getTimezoneList') {
-        $api_key = WPCF7VISION6::getApiKey($contact_form);
+        $api_key = WPCF7VISION6::get_api_key($contact_form);
         $instance = new WPCF7VISION6($api_key);
         $instance->api->setDebug(true);
         return $instance->api->invokeMethod($method);
-    }
-
-    /**
-     * Let other code to use Vision 6 API
-     *
-     * @return Vision6Api
-     */
-    public function getApi() {
-        return $this->api;
     }
 
     /**
@@ -195,16 +224,21 @@ Class WPCF7VISION6 {
         return $this->api->invokeMethod('searchContacts', $list_id, $search_criteria, 0, 0, '', '', $returned_fields);
     }
 
-    /**
-     * @param WPCF7_ContactForm $contact_form
-     * @param string $email
-     *
-     * @return int
-     */
-    public function hasEmail($contact_form, $email) {
-        $search_criteria = [['email', 'exactly', $email]];
+    private function hasEmail($contact_form, $field, $email) {
+        $search_criteria = [[$field, 'exactly', $email]];
         $results = $this->searchContacts($contact_form, $search_criteria);
-        return count($results);
+        if (is_array($results)) {
+            return ( ! empty($results[0]));
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function searchLists() {
+        return $this->api->invokeMethod('searchLists', [], 0, 0, 'name', 'ASC');
     }
 
     /**
@@ -218,6 +252,23 @@ Class WPCF7VISION6 {
     public function submit($contact_form, $contact_details) {
         $list_id = $this->get_list_id($contact_form);
         return $this->api->invokeMethod('subscribeContact', $list_id, $contact_details);
+    }
+
+    /**
+     * Debug
+     * If something wrong happened, die() is called.
+     */
+    public function check() {
+        $output = $this->api->invokeMethod('getTimezoneList');
+        return (is_array($output) && count($output));
+    }
+
+    /**
+     * @param int $list_id
+     * @return mixed
+     */
+    public function getListById($list_id) {
+        return $this->api->invokeMethod('getListById', $list_id);
     }
 }
 
@@ -236,27 +287,43 @@ function wpcf7vision6_wpcf7_editor_panel_additional_settings($post) {
     $info = '';
     $message = '';
 
-    $api_key = WPCF7VISION6::getApiKey($post);
+    $api_key = WPCF7VISION6::get_api_key($post);
     if ($api_key) {
 
         $api = new WPCF7VISION6($api_key);
         if ($api->check()) {
 
+            $valid = true;
 
             if ($api->has_list_id($post)) {
                 $list_id = $api->get_list_id($post);
-                $list_data = $api->get_list($list_id);
+                $list_data = $api->getListById($list_id);
                 if ($list_data === false) {
+                    $valid = false;
                     $error .= "\"vision6_list_id\" is invalid:\n"
                             . $api->getErrorMessage() . "\n";
-                } else {
-                    $info .= __('The setting looks fine.', 'wpcf7-vision6') . "\n";
                 }
             } else {
-                $info .= __('You must set "vision6_list_id".', 'wpcf7-vision6') . "\n";
+                $valid = false;
+                $error .= __('You must set "vision6_list_id".', 'wpcf7-vision6') . "\n";
+            }
+            $wpcf7_email_field = $api->get_contact7_email_field($post);
+            if ($wpcf7_email_field) {
+                $tags = $post->scan_form_tags(['name' => $wpcf7_email_field]);
+                if ( ! count($tags)) {
+                    $valid = false;
+                    $error .= __('"vision6_contact7_email_field" is invalid. The value must exist in "Form" Tab.', 'wpcf7-vision6') . "\n";
+                }
+            } else {
+                $valid = false;
+                $error .= __('You must set "vision6_contact7_email_field".', 'wpcf7-vision6') . "\n";
             }
 
-            $lists = $api->search_list();
+            if ($valid) {
+                $info .= __('The setting looks fine.', 'wpcf7-vision6') . "\n";
+            }
+
+            $lists = $api->searchLists();
             if (count($lists)) {
                 $info .= __('You can set ONE of the following lines:', 'wpcf7-vision6') . "\n";
                 foreach ($lists as $item) {
@@ -273,6 +340,7 @@ function wpcf7vision6_wpcf7_editor_panel_additional_settings($post) {
         $info = __('Vision 6 Setting not found, set the followings to start the integration:', 'wpcf7-vision6') . "\n";
         $message .= <<<EOT
 vision6_api_key: Get at https://www.vision6.com.au/
+vision6_contact7_email_field: your-email
 do_not_store: true
 skip_mail: on
 acceptance_as_validation: on
@@ -320,15 +388,49 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
      */
     function wpcf7vision6_wpcf7_before_send_mail($contact_form, &$abort, $submission) {
 
-        if (WPCF7VISION6::tiedToVision6($contact_form) && ($submission->get_status() == 'init')) {
+        if (WPCF7VISION6::is_vision6_form($contact_form) && ($submission->get_status() == 'init')) {
 
-            $api_key = WPCF7VISION6::getApiKey($contact_form);
+            $api_key = WPCF7VISION6::get_api_key($contact_form);
             $api = new WPCF7VISION6($api_key);
+
+            // Check if the setting has the field name for email for Contact Form 7
+            $wpcf7_email_field = $api->get_contact7_email_field($contact_form);
+            if ( ! $wpcf7_email_field) {
+                $abort = true;
+                $submission->set_status('validation_failed');
+                $submission->set_response($contact_form->filter_message(
+                    __('Cannot detect Email Field - Please Contact Us', 'wpcf7-vision6')
+                ));
+                return;
+            }
+
+            // Check if it can get the email address from the submission data with Contact Form 7 Setting
+            $posted_data = $submission->get_posted_data();
+            if (empty($posted_data[$wpcf7_email_field])) {
+                $abort = true;
+                $submission->set_status('validation_failed');
+                $submission->set_response($contact_form->filter_message(
+                    __('Cannot refer Email Address - Please Contact Us', 'wpcf7-vision6')
+                ));
+                return;
+            }
+
+            // Check if Vision 6 already has the email address
+            if ($api->has_email_in_vision6($contact_form, $posted_data[$wpcf7_email_field])) {
+                $abort = true;
+                $submission->set_status('validation_failed');
+                $submission->set_response($contact_form->filter_message(
+                    __('Email is already registered', 'wpcf7-vision6')
+                ));
+                return;
+            }
+
             /**
              * Enable you to set the key in case you cannot be bothered at spending time to match up the fields
              * between Contact Form 7 and Vision 6 List
              */
-            $contact_details = apply_filters('wpcf7vision6_get_contact_details', $contact_form, $api);
+            $contact_details = apply_filters('wpcf7vision6_get_contact_details', $contact_form, $api, $submission);
+
             /**
              * Enable you send the extra parameters
              *
@@ -357,6 +459,7 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
                 $submission->set_response($contact_form->filter_message(
                     __($api->getErrorMessage(), 'wpcf7-vision6')
                 ));
+                return;
             }
             /**
              * Let other code do more with Vision 6 API
@@ -384,7 +487,7 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
      */
     function wpcf7vision6_wpcf7_skip_mail($skip_mail, $contact_form) {
 
-        if ( ! $skip_mail && WPCF7VISION6::tiedToVision6($contact_form)) {
+        if ( ! $skip_mail && WPCF7VISION6::is_vision6_form($contact_form)) {
             $skip_mail = $contact_form->is_true('skip_mail');
         }
         return $skip_mail;
@@ -397,13 +500,47 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
      */
     function wpcf7vision6_wpcf7_submit($contact_form, $result) {
 
-        if (WPCF7VISION6::tiedToVision6($contact_form) && ($result['status'] == 'mail_sent')) {
+        if (WPCF7VISION6::is_vision6_form($contact_form) && ($result['status'] == 'mail_sent')) {
 
-            $api_key = WPCF7VISION6::getApiKey($contact_form);
+            $api_key = WPCF7VISION6::get_api_key($contact_form);
             $api = new WPCF7VISION6($api_key);
 
+            $submission = WPCF7_Submission::get_instance();
+
+            // Check if the setting has the field name for email for Contact Form 7
+            $wpcf7_email_field = $api->get_contact7_email_field($contact_form);
+            if ( ! $wpcf7_email_field) {
+                // Older versions do not really have a good way to handle the logic when the process failed
+                $_GET[WPCF7VISION6_RESULT] = [
+                    'status' => 'validation_failed',
+                    'message' => __('Cannot detect Email Field - Please Contact Us', 'wpcf7-vision6'),
+                ];
+                return;
+            }
+
+            // Check if it can get the email address from the submission data with Contact Form 7 Setting
+            $posted_data = $submission->get_posted_data();
+            if (empty($posted_data[$wpcf7_email_field])) {
+                // Older versions do not really have a good way to handle the logic when the process failed
+                $_GET[WPCF7VISION6_RESULT] = [
+                    'status' => 'validation_failed',
+                    'message' => __('Cannot refer Email Address - Please Contact Us', 'wpcf7-vision6'),
+                ];
+                return;
+            }
+
+            // Check if Vision 6 already has the email address
+            if ($api->has_email_in_vision6($contact_form, $posted_data[$wpcf7_email_field])) {
+                // Older versions do not really have a good way to handle the logic when the process failed
+                $_GET[WPCF7VISION6_RESULT] = [
+                    'status' => 'validation_failed',
+                    'message' => __('Email is already registered', 'wpcf7-vision6'),
+                ];
+                return;
+            }
+
             /* @see wpcf7vision6_wpcf7_before_send_mail() */
-            $contact_details = apply_filters('wpcf7vision6_get_contact_details', $contact_form, $api);
+            $contact_details = apply_filters('wpcf7vision6_get_contact_details', $contact_form, $api, $submission);
 
             /* @see wpcf7vision6_wpcf7_before_send_mail() */
             if (apply_filters('wpcf7vision6_submit_use_default_method', $contact_form, $api)) {
@@ -417,6 +554,7 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
                     'status' => 'validation_failed',
                     'message' => __($api->getErrorMessage(), 'wpcf7-vision6'),
                 ];
+                return;
             }
             /* @see wpcf7vision6_wpcf7_before_send_mail() */
             do_action('wpcf7vision6_submit', $result, $contact_details, $api, $contact_form);
@@ -460,12 +598,17 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
 // Older than version 4.4 is not supported at the moment, but you can try adding the logic to "functions.php"
 
 /**
- * @param WPCF7_ContactForm $contact_form
  * @param $api
  * @return array
  */
-function wpcf7vision6_get_contact_details_default($contact_form, $api) {
-    $submission = WPCF7_Submission::get_instance();
+/**
+ * @param WPCF7_ContactForm $contact_form
+ * @param WPCF7VISION6 $api
+ * @param WPCF7_Submission $submission
+ *
+ * @return array
+ */
+function wpcf7vision6_get_contact_details_default($contact_form, $api, $submission) {
     $posted_data = $submission->get_posted_data();
     $contact_details = [];
     foreach ($posted_data as $key => $value) {
@@ -474,4 +617,4 @@ function wpcf7vision6_get_contact_details_default($contact_form, $api) {
     }
     return $contact_details;
 }
-add_filter('wpcf7vision6_get_contact_details', 'wpcf7vision6_get_contact_details_default', 1, 2);
+add_filter('wpcf7vision6_get_contact_details', 'wpcf7vision6_get_contact_details_default', 1, 3);

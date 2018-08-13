@@ -36,12 +36,14 @@ $ wp plugin install https://github.com/hironozu/wpcf7-vision6/archive/master.zip
 
 ## Example Setting at "Additional Settings" Tab
 
+- If field name for Email is not `your-email`, Change the value of `vision6_contact7_email_field`.
 - If you wish to store the data with a 3rd party plugin, do not include `do_not_store`.
 - If you wish to send the email upon submission, do not include `skip_mail`.
 - If the form does not have the consent, do not include `acceptance_as_validation`.
 
 ```
 vision6_api_key: [Get API Key at https://www.vision6.com.au/]
+vision6_contact7_email_field: your-email
 do_not_store: true
 skip_mail: on
 acceptance_as_validation: on
