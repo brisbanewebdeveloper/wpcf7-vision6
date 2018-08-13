@@ -7,7 +7,7 @@
 
 ## Requirement
 
-Contact Form 7 Version 4.4 or later. You can still put extra code in `functions.php` by referring the code in `wpcf7-vision6.php` even the version does not match.
+Contact Form 7 Version 4.4 or later. You can still put extra code in `functions.php` by referring the code in `wpcf7-vision6.php` even if the version does not match.
 
 ## General Setup
 
@@ -41,7 +41,7 @@ $ wp plugin install https://github.com/hironozu/wpcf7-vision6/archive/master.zip
 - If the form does not have the consent, do not include `acceptance_as_validation`.
 
 ```
-vision6_api_key: [Get at https://www.vision6.com.au/integration/api_keys]
+vision6_api_key: [Get API Key at https://www.vision6.com.au/]
 do_not_store: true
 skip_mail: on
 acceptance_as_validation: on
