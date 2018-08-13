@@ -598,10 +598,6 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
 // Older than version 4.4 is not supported at the moment, but you can try adding the logic to "functions.php"
 
 /**
- * @param $api
- * @return array
- */
-/**
  * @param WPCF7_ContactForm $contact_form
  * @param WPCF7VISION6 $api
  * @param WPCF7_Submission $submission
