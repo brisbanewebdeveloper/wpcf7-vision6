@@ -180,6 +180,34 @@ Class WPCF7VISION6 {
     }
 
     /**
+     * https://developers.vision6.com.au/3.2/method/searchcontacts
+     * https://developers.vision6.com.au/3.2/guide/search
+     *
+     * @param WPCF7_ContactForm $contact_form
+     * @param array $search_criteria
+     * @param array $returned_fields
+     *
+     * @return mixed
+     */
+    public function searchContacts($contact_form, $search_criteria = [], $returned_fields = []) {
+        $list_id = $this->get_list_id($contact_form);
+        if ( ! count($returned_fields)) $returned_fields = ['id', 'your-mail', 'Email'];
+        return $this->api->invokeMethod('searchContacts', $list_id, $search_criteria, 0, 0, '', '', $returned_fields);
+    }
+
+    /**
+     * @param WPCF7_ContactForm $contact_form
+     * @param string $email
+     *
+     * @return int
+     */
+    public function hasEmail($contact_form, $email) {
+        $search_criteria = [['email', 'exactly', $email]];
+        $results = $this->searchContacts($contact_form, $search_criteria);
+        return count($results);
+    }
+
+    /**
      * subscribeContact
      * https://developers.vision6.com.au/3.3/method/subscribecontact
      *
@@ -244,7 +272,7 @@ function wpcf7vision6_wpcf7_editor_panel_additional_settings($post) {
     } else {
         $info = __('Vision 6 Setting not found, set the followings to start the integration:', 'wpcf7-vision6') . "\n";
         $message .= <<<EOT
-vision6_api_key: Get at https://www.vision6.com.au/integration/api_keys/
+vision6_api_key: Get at https://www.vision6.com.au/
 do_not_store: true
 skip_mail: on
 acceptance_as_validation: on
@@ -428,9 +456,8 @@ if (version_compare(WPCF7_VERSION, '5.0', '>=')) {
     }
     add_filter('wpcf7_ajax_json_echo', 'wpcf7vision6_wpcf7_ajax_json_echo');
 
-} else {
-    // Older than version 4.4 is not supported at the moment, but you can try adding the logic to "functions.php"
 }
+// Older than version 4.4 is not supported at the moment, but you can try adding the logic to "functions.php"
 
 /**
  * @param WPCF7_ContactForm $contact_form
