@@ -92,11 +92,17 @@ Above behaviour makes the email for Admin have `your-email` instead of the value
 
 ![Email for Default Behaviour](assets/field-mapping-default-behaviour-email.png "Email for Default Behaviour")
 
-If that is not acceptable or you cannot be bothered at matching up the fields between Contact Form 7 and Vision 6, you can add the following code to `functions.php` and amend the code to map the fields:
+If that is not acceptable or you cannot be bothered at matching up the fields between Contact Form 7 and Vision 6, you can add the following code to `functions.php` and amend it to map the fields:
 
 ```php
-function my_wpcf7vision6_get_contact_details($contact_form, $api) {
-    $submission = WPCF7_Submission::get_instance();
+/**
+ * @param WPCF7_ContactForm $contact_form
+ * @param WPCF7VISION6 $api
+ * @param WPCF7_Submission $submission
+ *
+ * @return array
+ */
+function my_wpcf7vision6_get_contact_details($contact_form, $api, $submission) {
     $posted_data = $submission->get_posted_data();
     return [
     //  'Field Name at Vision 6' => $posted_data['Field Name at Contact Form 7']
@@ -106,5 +112,5 @@ function my_wpcf7vision6_get_contact_details($contact_form, $api) {
         'Mobile Phone' => $posted_data['your-phone'],
     ];
 }
-add_filter('wpcf7vision6_get_contact_details', 'my_wpcf7vision6_get_contact_details', 10, 2);
+add_filter('wpcf7vision6_get_contact_details', 'my_wpcf7vision6_get_contact_details', 10, 3);
 ```
